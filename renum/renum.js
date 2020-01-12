@@ -38,9 +38,9 @@ class BasicLine {
 
 function Renumber(lines, keyword) {
 	lines.forEach(line => {
-		let goto = line.lineString.indexOf(keyword);
+		let goto = line.lineString.toUpperCase().indexOf(keyword.toUpperCase());
 		if (goto > -1) {
-			var match = new RegExp(keyword + '\\ ?\\d+', 'g');
+			var match = new RegExp(keyword + '\\ *\\d+', 'gi');
 			let gonum = line.lineString.match(match);
 			if (gonum != null && gonum.length > 0) {
 				for (var x = 0; x < gonum.length; x++) {
