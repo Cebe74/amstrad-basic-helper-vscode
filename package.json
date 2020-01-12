@@ -1,8 +1,8 @@
 {
 	"name": "amstrad-basic-helper-vscode",
 	"displayName": "Amstrad Basic Helper",
-	"description": "Syntax Highlighter + Helper commands for developping Amstrad Basic programs",
-	"version": "0.0.1",
+	"description": "Syntax Highlighter, Validator and Renumberer for Amstrad Basic programs",
+	"version": "1.0.2",
 	"publisher": "cebe74",
 	"engines": {
 		"vscode": "^1.41.0"
