@@ -1,94 +1,78 @@
 const vscode = require('vscode');
 const path = require('path');
-const workbenchConfig = vscode.workspace.getConfiguration('amstrad-basic-helper');
+const renum = require('./renum/renum.js');
+const CodeGeneratorJs = require('./cpcBasic/CodeGeneratorJs.js');
+const BasicLexer = require("./cpcBasic/BasicLexer.js");
+const BasicParser = require("./cpcBasic/BasicParser.js");
 
+const workbenchConfig = vscode.workspace.getConfiguration('amstrad-basic-helper');
 var renumIncrement = workbenchConfig.get('renumIncrement');
 
-let orange = vscode.window.createOutputChannel("Amstrad Basic Helper");
-
-class BasicLine {
-	// object to represent a line of basic code,
-	// with original and new line numbers
-
-	constructor(lineNumber, lineString) {
-		this._lineNumber = lineNumber;
-		this._lineString = lineString;
-	}
-	set newLineNumber(newLineNumber) {
-		this._newLineNumber = newLineNumber;
-	}
-	set lineString(newLineString) {
-		this._lineString = newLineString;
-	}
-	get lineString() {
-		return this._lineString;
-	}
-	get newLineString() {
-		//return the line with new line number
-		//if the line doesn't start with a line number, insert the new number
-		try {
-			parseInt(this.lineString.match(/^\d+/)[0]);
-		}
-		catch (ex) {
-			return this.newLineNumber + ' ' + this.lineString;
+function updateDiagnostics(document, collection) {
+	if (document && path.extname(document.fileName).toUpperCase() == '.BAS') {
+		if (!this.oCodeGeneratorJs) {
+			this.oCodeGeneratorJs = new CodeGeneratorJs({
+				lexer: new BasicLexer(),
+				parser: new BasicParser(),
+				tron: false
+			});
+		} else {
+			this.oCodeGeneratorJs.reset();
 		}
 
-		return this.lineString.replace(this.lineNumber, this.newLineNumber);
-	}
+		var text = document.getText();
 
-	get lineNumber() {
-		return this._lineNumber;
-	}
-	get newLineNumber() {
-		return this._newLineNumber;
-	}
-}
+		var outputVariables = {};
+		
+		var output = this.oCodeGeneratorJs.generate(text, outputVariables);
+		if (output.error) {
+			var outputError = output.error;
+			var iStartPos = outputError.pos
+			var iEndPos = iStartPos + ((outputError.value !== undefined) ? String(outputError.value).length : 0);
 
-function Renumber(lines, keyword) {
-	lines.forEach(line => {
-		let goto = line.lineString.indexOf(keyword);
-		if (goto > -1) {
-			var match = new RegExp(keyword + '\\ ?\\d+', 'g');
-			let gonum = line.lineString.match(match);
-			if (gonum != null && gonum.length > 0) {
-				for (var x = 0; x < gonum.length; x++) {
-					var m = gonum[x].match(/\d+/);
-					for (var y = 0; y < m.length; y++) {
-						let lineNumberToReplace = m[y];
-						let newLineNumber = GetNewLineNum(lines, lineNumberToReplace);
-						if (newLineNumber === -1) { 
-							orange.appendLine("WARNING - Line: " + lineNumberToReplace + " not found in original line: " + line.lineString + "");
-							continue;
-						}
-						let newgonum = gonum[x].replace(lineNumberToReplace, newLineNumber);
-						line.lineString = line.lineString.replace(gonum[x], newgonum);
-					}
-				}
-			}
+			collection.set(document.uri, [{
+				code: '',
+				message: `${outputError.message}: '${outputError.value}'`,
+				range: new vscode.Range(
+					document.positionAt(iStartPos),
+					document.positionAt(iEndPos)
+				),
+				severity: vscode.DiagnosticSeverity.Error,
+				source: ''
+			}]);
+		} else {
+			collection.delete(document.uri);
 		}
-	});
-	return lines;
-}
-
-function GetNewLineNum(lines, originalLineNumber) {
-	var newLineNumber = -1;
-	lines.forEach(line => {
-		if (line.lineNumber == originalLineNumber) {
-			newLineNumber = line.newLineNumber;
-		}
-	});
-	return newLineNumber;
+	}
 }
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-	let renumber = vscode.commands.registerCommand('amstrad-basic-helper.renum', function () {
+
+	const collection = vscode.languages.createDiagnosticCollection('Amstrad Basic');
+	if (vscode.window.activeTextEditor) {
+		updateDiagnostics(vscode.window.activeTextEditor.document, collection);
+	}
+
+	context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(editor => {
+		if (editor) {
+			updateDiagnostics(editor.document, collection);
+		}
+	}));
+
+	let renumberMe = vscode.commands.registerCommand('amstrad-basic-helper.renum', function () {
 		if (path.extname(vscode.window.activeTextEditor.document.fileName).toUpperCase() == '.BAS') {
 			let editor = vscode.window.activeTextEditor;
 			if (!editor) {
+				vscode.window.showInformationMessage('Please open an Amstrad Basic document first!');
 				return; // No open text editor
+			}
+
+			if (collection.has(editor.document.uri)) {
+				vscode.window.showErrorMessage('The current Amstrad Basic file has errors and cannot be renumbered!');
+				return;
 			}
 
 			var linelist = [];
@@ -108,7 +92,7 @@ function activate(context) {
 				}
 
 				let lineString = line.text.substring(lineNumber.length);
-				var l = new BasicLine(lineNumber, lineString);
+				var l = new renum.BasicLine(lineNumber, lineString);
 				linelist.push(l);
 			}
 
@@ -117,12 +101,12 @@ function activate(context) {
 				line.newLineNumber = newLineNumber;
 				newLineNumber += renumIncrement;
 			});
-			
-			Renumber(linelist, "GOTO");
-			Renumber(linelist, "GOSUB");
-			Renumber(linelist, "RESTORE");
-			Renumber(linelist, "THEN");
-			Renumber(linelist, "ELSE");
+
+			renum.Renumber(linelist, "GOTO");
+			renum.Renumber(linelist, "GOSUB");
+			renum.Renumber(linelist, "RESTORE");
+			renum.Renumber(linelist, "THEN");
+			renum.Renumber(linelist, "ELSE");
 
 			for (ls = 0; ls < linelist.length; ls++) {
 				let line = editor.document.lineAt(ls);
@@ -137,7 +121,7 @@ function activate(context) {
 		}
 	});
 
-	context.subscriptions.push(renumber);
+	context.subscriptions.push(renumberMe);
 }
 exports.activate = activate;
 

@@ -15,8 +15,8 @@
         "type": "git",
         "url": "https://github.com/Cebe74/amstrad-basic-helper-vscode"
     },
-	"activationEvents": [
-		"onCommand:amstrad-basic-helper.renum"
+	"activationEvents": [		
+		"*"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -46,7 +46,7 @@
 				"amstrad-basic-helper.renumIncrement": {
 					"type": "integer",
 					"default": 10,
-					"description": "Renum default Line number increment"
+					"description": "Renum default line number increment"
 				}
 			}
 		},

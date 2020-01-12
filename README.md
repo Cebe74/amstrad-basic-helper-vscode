@@ -2,9 +2,9 @@
 
 LOCOMOTIVE SOFTWARE AMSTRAD CPC BASIC syntax highlighting for Visual Studio Code.
 
-* Supports all reserved words from the AMSTRAD CPC Locomotive BASIC range.
+* Supports all reserved words from the AMSTRAD CPC Locomotive BASIC range,
+* Validates Amstrad Basic documents,
 * Renumbers the currently opened BASIC file in the same fashion that old RENUM statement works. Available from the Command Palette.
-
 
 ![Sample showing colorized code](images/basic.png)
 
@@ -45,7 +45,7 @@ AND, NOT, OR, XOR, MOD
 
 <!-- ## Installation
 
-Launch VS Code Quick Open (**Ctrl+P**), paste the following commnand, and press Enter.
+Launch VS Code Quick Open (**Ctrl+P**), paste the following command, and press Enter.
 
 ```vscode
 ext install amstradbasic
@@ -122,9 +122,8 @@ To change the colors to your liking, just edit `settings.json` global file and a
     }
 ```
 
-
 ## Acknowledgments
 
 - This is a fork of the excellent [AMSTRAD-Basic](https://github.com/dfreniche/amstradbasic-vscode) extension from dfreniche. Credits go to him.
-- Renum function adapted for Amstrad Basic from the [COCOTools](https://marketplace.visualstudio.com/items?itemName=jasonpittman.cocotools extension) from jasonpittman.
-
+- Renum function adapted for Amstrad Basic from the [COCOTools](https://marketplace.visualstudio.com/items?itemName=jasonpittman.cocotools) extension from jasonpittman.
+- Validation code comes from the [CPCBasic](https://github.com/benchmarko/CPCBasic) project from Marco Vieth.
