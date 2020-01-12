@@ -1,40 +1,61 @@
 {
-    "name": "amstradbasic",
-    "displayName": "AMSTRAD-Basic",
-    "description": "LOCOMOTIVE AMSTRAD BASIC syntax highlighting",
-    "version": "0.0.1",
-    "publisher": "dfreniche",
-    "engines": {
-        "vscode": "^1.12.0"
-    },
-    "icon": "images/Locomotive_BASIC_amstrad_cpc.PNG",
-    "categories": [
-        "Programming Languages"
-    ],
-    "repository": {
+	"name": "amstrad-basic-helper-vscode",
+	"displayName": "Amstrad Basic Helper",
+	"description": "Syntax Highlighter + Helper commands for developping Amstrad Basic programs",
+	"version": "0.0.1",
+	"publisher": "cebe74",
+	"engines": {
+		"vscode": "^1.41.0"
+	},
+	"icon": "images/ready.png",
+	"categories": [
+		"Programming Languages"
+	],
+	"repository": {
         "type": "git",
-        "url": "https://github.com/dfreniche/amstradbasic-vscode.git"
+        "url": "https://github.com/Cebe74/amstrad-basic-helper-vscode"
     },
-    "contributes": {
-        "languages": [
-            {
-                "id": "amstradbasic",
-                "aliases": [
-                    "AMSTRAD-Basic",
-                    "amstradbasic"
-                ],
-                "extensions": [
-                    ".bas"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "amstradbasic",
-                "scopeName": "source.amstradbasic",
-                "path": "./syntaxes/amstradbasic.tmLanguage.json"
-            }
-        ]
-    }
+	"activationEvents": [
+		"onCommand:amstrad-basic-helper.renum"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"languages": [
+			{
+				"id": "amstradbasic",
+				"aliases": [
+					"Amstrad Basic",
+					"amstradbasic"
+				],
+				"extensions": [
+					".bas"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"commands": [
+			{
+				"command": "amstrad-basic-helper.renum",
+				"title": "Amstrad Basic Renum"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Amstrad Basic Helper Commands",
+			"properties": {
+				"amstrad-basic-helper.renumIncrement": {
+					"type": "integer",
+					"default": 10,
+					"description": "Renum default Line number increment"
+				}
+			}
+		},
+		"grammars": [
+			{
+				"language": "amstradbasic",
+				"scopeName": "source.amstradbasic",
+				"path": "./syntaxes/amstradbasic.tmLanguage.json"
+			}
+		]
+	}
 }
