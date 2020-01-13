@@ -102,11 +102,7 @@ function activate(context) {
 				newLineNumber += renumIncrement;
 			});
 
-			renum.Renumber(linelist, "GOTO");
-			renum.Renumber(linelist, "GOSUB");
-			renum.Renumber(linelist, "RESTORE");
-			renum.Renumber(linelist, "THEN");
-			renum.Renumber(linelist, "ELSE");
+			renum.Renumber(linelist);
 
 			for (ls = 0; ls < linelist.length; ls++) {
 				let line = editor.document.lineAt(ls);
