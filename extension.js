@@ -91,7 +91,7 @@ function activate(context) {
 
 				}
 
-				let lineString = line.text.substring(lineNumber.length);
+				let lineString = line.text.substring(lineNumber.toString().length + 1);
 				var l = new renum.BasicLine(lineNumber, lineString);
 				linelist.push(l);
 			}
