@@ -60,14 +60,14 @@ class RunPanel {
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-        
+
         // Update the content based on view changes
         this._panel.onDidChangeViewState(e => {
             if (this._panel.visible) {
                 this._update(this._programName, this._program);
             }
         }, null, this._disposables);
-        
+
         // Handle messages from the webview
         this._panel.webview.onDidReceiveMessage(message => {
             switch (message.command) {
@@ -79,32 +79,28 @@ class RunPanel {
     }
 
     static createOrShow(extensionPath, programName, program) {
-        const column = vscode.window.activeTextEditor
-            ? vscode.window.activeTextEditor.viewColumn
-            : undefined;
+        const column = vscode.ViewColumn.Beside;
         // If we already have a panel, show it.
         if (RunPanel.currentPanel) {
             RunPanel.currentPanel._panel.reveal(column);
             return;
         }
         // Otherwise, create a new panel.
-        const panel = vscode.window.createWebviewPanel(RunPanel.viewType, programName, column || vscode.ViewColumn.Two, {
-            // Enable javascript in the webview
-            enableScripts: true,
-            // And restrict the webview to only loading content from our extension's `media` directory.
-            localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'cpcBasic'))]
-        });
+        const panel = vscode.window.createWebviewPanel(RunPanel.viewType, programName,
+            {
+                preserveFocus: true,
+                viewColumn: column
+            },
+            {
+                enableScripts: true,
+                localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'cpcBasic'))]
+            });
         RunPanel.currentPanel = new RunPanel(panel, extensionPath, programName, program);
-    }
+    }    
 
-    static revive(panel, extensionPath) {
-        RunPanel.currentPanel = new RunPanel(panel, extensionPath);
-    }
-
-    doRefactor() {
-        // Send a message to the webview webview.
-        // You can send any JSON serializable data.
-        this._panel.webview.postMessage({ command: 'refactor' });
+    run(programName, program) {
+        this._panel.title = programName;
+        this._panel.webview.postMessage({ name: programeName, sourceCode: program });
     }
 
     dispose() {
@@ -223,6 +219,13 @@ class RunPanel {
                 </div>
             </fieldset>
             ${scriptBlock}
+            <script>
+            // Handle the message inside the webview
+            window.addEventListener('message', event => {
+                const program = event.data; // The JSON data our extension sent
+                document.getElementById("inputText").value = program.sourceCode;                
+            })
+            </script>
         </body>
         </html>`;
         return html;
@@ -325,6 +328,7 @@ function activate(context) {
             var programName = path.parse(editor.document.fileName).base;
             var program = editor.document.getText();
             RunPanel.createOrShow(context.extensionPath, programName, program);
+            //RunPanel.run(programName, program);
         }
     }));
 
