@@ -47,21 +47,27 @@ function updateDiagnostics(document, collection) {
 }
 
 class RunPanel {
-    constructor(panel, extensionPath) {
+    constructor(panel, extensionPath, programName, program) {
         this._disposables = [];
         this._panel = panel;
         this._extensionPath = extensionPath;
+        this._programName = programName;
+        this._program = program;
+
         // Set the webview's initial html content
-        this._update();
+        this._updateForProgram(this._programName, this._program);
+
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+        
         // Update the content based on view changes
         this._panel.onDidChangeViewState(e => {
             if (this._panel.visible) {
-                this._update();
+                this._update(this._programName, this._program);
             }
         }, null, this._disposables);
+        
         // Handle messages from the webview
         this._panel.webview.onDidReceiveMessage(message => {
             switch (message.command) {
@@ -71,7 +77,8 @@ class RunPanel {
             }
         }, null, this._disposables);
     }
-    static createOrShow(extensionPath) {
+
+    static createOrShow(extensionPath, programName, program) {
         const column = vscode.window.activeTextEditor
             ? vscode.window.activeTextEditor.viewColumn
             : undefined;
@@ -81,22 +88,25 @@ class RunPanel {
             return;
         }
         // Otherwise, create a new panel.
-        const panel = vscode.window.createWebviewPanel(RunPanel.viewType, 'Run', column || vscode.ViewColumn.One, {
+        const panel = vscode.window.createWebviewPanel(RunPanel.viewType, programName, column || vscode.ViewColumn.Two, {
             // Enable javascript in the webview
             enableScripts: true,
             // And restrict the webview to only loading content from our extension's `media` directory.
             localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'cpcBasic'))]
         });
-        RunPanel.currentPanel = new RunPanel(panel, extensionPath);
+        RunPanel.currentPanel = new RunPanel(panel, extensionPath, programName, program);
     }
+
     static revive(panel, extensionPath) {
         RunPanel.currentPanel = new RunPanel(panel, extensionPath);
     }
+
     doRefactor() {
         // Send a message to the webview webview.
         // You can send any JSON serializable data.
         this._panel.webview.postMessage({ command: 'refactor' });
     }
+
     dispose() {
         RunPanel.currentPanel = undefined;
         // Clean up our resources
@@ -108,15 +118,14 @@ class RunPanel {
             }
         }
     }
-    _update() {
+
+    _updateForProgram(programName, program) {
         const webview = this._panel.webview;
-        this._updateForProgram(webview, "run");
+        this._panel.title = `RUN"${programName}"`;
+        this._panel.webview.html = this._getHtmlForWebview(webview, program);
     }
-    _updateForProgram(webview, programName) {
-        this._panel.title = programName;
-        this._panel.webview.html = this._getHtmlForWebview(webview);
-    }
-    _getHtmlForWebview(webview) {
+
+    _getHtmlForWebview(webview, program) {
         var scripts = ["BasicLexer.js", "BasicParser.js", "Canvas.js", "CodeGeneratorJs.js", "CommonEventHandler.js", "Controller.js", "CpcVm.js", "Keyboard.js", "Model.js", "Random.js", "Sound.js", "Utils.js",
             "View.js", "cpcCharset.js", "cpcconfig.js", "cpcbasic.js"];
 
@@ -146,29 +155,11 @@ class RunPanel {
         <body>
             <fieldset class="flexBox">
                 <legend>
-                    <span id="inputLegend" class="legendButton" title="Show/Hide BASIC">CPC BASIC</span>
-                    <button id="reloadButton" title="Reload page with URL parameter settings">Reload</button>
-                    <button id="helpButton" title="Help">Help</button>
+                    <span id="inputLegend" class="legendButton" title="Show/Hide BASIC">CPC BASIC by Marco Vieth</span>
                 </legend>
-                <div id="exampleSelectArea" class="area">
-                    <div class="field">
-                        <select id="databaseSelect" title="Select Database"></select>
-                    </div>
-                    <div class="field selectWrap">
-                        <select id="exampleSelect" title="Load Example"></select>
-                    </div>
-                </div>
+                <span id="warning">WARNING: The code is not updated when the main document changes. You need to RUN again. This will be improved in the next version.</span>
                 <div id="inputArea" class="area  clearLeft">
-                    <textarea id="inputText" rows="15" cols="80" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
-                    <div>
-                        <!--
-                        <button id="saveButton" title="Save input to local storage" disabled>Save</button>
-                        <button id="deleteButton" title="Delete input from local storage" disabled>Del</button>
-                        <button id="undoButton" title="Undo changes" disabled>Undo</button>
-                        <button id="redoButton" title="Redo changes" disabled>Redo</button>
-                        -->
-                        <button id="parseButton" title="Compile BASIC script">Compile only</button>
-                    </div>
+                    <textarea id="inputText" rows="15" cols="80" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">${program}</textarea>
                 </div>
             </fieldset>
             <fieldset class="flexBox clearLeft" id="cpcAreaBox">
@@ -178,7 +169,6 @@ class RunPanel {
                     <button id="stopButton" title="Stop/escape/break running script" disabled>Break</button>
                     <button id="continueButton" title="Continue script" disabled>Continue</button>
                     <button id="resetButton" title="Reset CPC">Reset</button>
-                    <button id="screenshotButton" title="Take Screenshot and download">Screenshot</button>
                     <button id="soundButton" title="Sound on/off">Sound</button>
                 </legend>
                 <div id="cpcArea" class="area">
@@ -232,7 +222,6 @@ class RunPanel {
                     <textarea id="consoleText" rows="12" cols="40"></textarea>
                 </div>
             </fieldset>
-            <a id="screenshotLink"></a>
             ${scriptBlock}
         </body>
         </html>`;
@@ -266,13 +255,13 @@ function activate(context) {
     }));
 
     let renumberMe = vscode.commands.registerCommand('amstrad-basic-helper.renum', function () {
-        if (path.extname(vscode.window.activeTextEditor.document.fileName).toUpperCase() == '.BAS') {
-            let editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showInformationMessage('Please open an Amstrad Basic document first!');
-                return; // No open text editor
-            }
+        let editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showInformationMessage('Please open an Amstrad Basic document first!');
+            return; // No open text editor
+        }
 
+        if (path.extname(editor.document.fileName).toUpperCase() == '.BAS') {
             if (collection.has(editor.document.uri)) {
                 vscode.window.showErrorMessage('The current Amstrad Basic file has errors and cannot be renumbered!');
                 return;
@@ -321,7 +310,22 @@ function activate(context) {
     });
 
     context.subscriptions.push(vscode.commands.registerCommand('amstrad-basic-helper.run', () => {
-        RunPanel.createOrShow(context.extensionPath);
+        let editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showInformationMessage('Please open an Amstrad Basic document first!');
+            return; // No open text editor
+        }
+
+        if (path.extname(editor.document.fileName).toUpperCase() == '.BAS') {
+            if (collection.has(editor.document.uri)) {
+                vscode.window.showErrorMessage('The current Amstrad Basic file has errors and cannot be run!');
+                return;
+            }
+
+            var programName = path.parse(editor.document.fileName).base;
+            var program = editor.document.getText();
+            RunPanel.createOrShow(context.extensionPath, programName, program);
+        }
     }));
 
     context.subscriptions.push(renumberMe);

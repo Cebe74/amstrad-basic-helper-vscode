@@ -27,8 +27,6 @@ function Controller(oModel, oView) {
 
 Controller.prototype = {
 	init: function (oModel, oView) {
-		var sExample;
-
 		this.fnRunLoopHandler = this.fnRunLoop.bind(this);
 		this.fnOnWaitForKey = this.fnWaitForKey.bind(this);
 		this.fnOnWaitForInput = this.fnWaitForInput.bind(this);
@@ -71,137 +69,18 @@ Controller.prototype = {
 		}
 		this.commonEventHandler.fnActivateUserAction(this.onUserAction.bind(this)); // check first user action, also if sound is not yet on
 
-		sExample = oModel.getProperty("example");
-		oView.setSelectValue("exampleSelect", sExample);
-
 		this.oVm = new CpcVm({
 			canvas: this.oCanvas,
 			keyboard: this.oKeyboard,
 			sound: this.oSound,
 			tron: oModel.getProperty("tron")
 		});
-
-		this.fnInitDatabases();
-	},
-
-	fnInitDatabases: function () {
-		var oModel = this.model,
-			oDatabases = {},
-			aDatabaseDirs, i, sDatabaseDir, aParts, sName;
-
-		aDatabaseDirs = oModel.getProperty("databaseDirs").split(",");
-		for (i = 0; i < aDatabaseDirs.length; i += 1) {
-			sDatabaseDir = aDatabaseDirs[i];
-			aParts = sDatabaseDir.split("/");
-			sName = aParts[aParts.length - 1];
-			oDatabases[sName] = {
-				text: sName,
-				title: sName,
-				src: sDatabaseDir
-			};
-		}
-		this.model.addDatabases(oDatabases);
-
-		this.fnSetDatabaseSelectOptions();
-		this.commonEventHandler.onDatabaseSelectChange();
 	},
 
 	onUserAction: function (/* event, sId */) {
 		this.commonEventHandler.fnDeactivateUserAction();
 		this.oSound.setActivatedByUser(true);
 		this.fnSetSoundActive();
-	},
-
-	// Also called from index file 0index.js
-	fnAddIndex: function (sDir, input) { // optional sDir
-		var sInput, aIndex, i;
-
-		sInput = input.trim();
-		aIndex = JSON.parse(sInput);
-		for (i = 0; i < aIndex.length; i += 1) {
-			aIndex[i].dir = sDir;
-			this.model.setExample(aIndex[i]);
-		}
-	},
-
-	// Also called from example files xxxxx.js
-	fnAddItem: function (sKey, input) { // optional sKey
-		var sInput, oExample;
-
-		sInput = input.trim();
-
-		if (!sKey) {
-			sKey = this.model.getProperty("example");
-		}
-		oExample = this.model.getExample(sKey);
-		if (!oExample) {
-			oExample = this.fnCreateNewExample({
-				key: sKey
-			});
-			sKey = oExample.key;
-			this.model.setExample(oExample);
-			Utils.console.log("fnAddItem: Creating new example: " + sKey);
-		}
-		oExample.key = sKey; // maybe changed
-		oExample.script = sInput;
-		oExample.loaded = true;
-		Utils.console.log("fnAddItem: " + sKey);
-		return sKey;
-	},
-
-	fnSetDatabaseSelectOptions: function () {
-		var sSelect = "databaseSelect",
-			aItems = [],
-			oDatabases = this.model.getAllDatabases(),
-			sDatabase = this.model.getProperty("database"),
-			sValue, oDb, oItem;
-
-		for (sValue in oDatabases) {
-			if (oDatabases.hasOwnProperty(sValue)) {
-				oDb = oDatabases[sValue];
-				oItem = {
-					value: sValue,
-					text: oDb.text,
-					title: oDb.title
-				};
-				if (sValue === sDatabase) {
-					oItem.selected = true;
-				}
-				aItems.push(oItem);
-			}
-		}
-		this.view.setSelectOptions(sSelect, aItems);
-	},
-
-	fnSetExampleSelectOptions: function () {
-		var iMaxTitleLength = 160,
-			iMaxTextLength = 60, // (32 visible?)
-			sSelect = "exampleSelect",
-			aItems = [],
-			sExample = this.model.getProperty("example"),
-			oAllExamples = this.model.getAllExamples(),
-			bExampleSelected = false,
-			sKey, oExample, oItem;
-
-		for (sKey in oAllExamples) {
-			if (oAllExamples.hasOwnProperty(sKey)) {
-				oExample = oAllExamples[sKey];
-				oItem = {
-					value: oExample.key,
-					title: (oExample.key + ": " + oExample.title).substr(0, iMaxTitleLength)
-				};
-				oItem.text = oItem.title.substr(0, iMaxTextLength);
-				if (oExample.key === sExample) {
-					oItem.selected = true;
-					bExampleSelected = true;
-				}
-				aItems.push(oItem);
-			}
-		}
-		if (!bExampleSelected && aItems.length) {
-			aItems[0].selected = true; // if example is not found, select first element
-		}
-		this.view.setSelectOptions(sSelect, aItems);
 	},
 
 	fnSetVarSelectOptions: function (sSelect, oVariables) {
@@ -366,108 +245,6 @@ Controller.prototype = {
 		}
 		aResult = aResult.concat(aLines1, aLines2); // put in remaining lines from one source
 		return aResult.join("\n");
-	},
-
-	fnLoadFile: function () {
-		var that = this,
-			oVm = this.oVm,
-			oInFile = this.oVm.vmGetFileObject(),
-			sPath = "",
-			sDatabaseDir, sName, sExample, oExample, sKey, iLastSlash, sUrl,
-
-			fnContinue = function (sInput) {
-				var sCommand = oInFile.sCommand,
-					iStartLine = 0;
-
-				that.model.setProperty("example", oInFile.sMemorizedExample);
-				that.oVm.vmStop("", 0, true);
-				if (oInFile.fnFileCallback) {
-					oInFile.fnFileCallback(sInput);
-				}
-				if (sInput) {
-					switch (sCommand) {
-					case "openin":
-						break;
-					case "chainMerge":
-						sInput = that.fnMergeScripts(that.view.getAreaValue("inputText"), sInput);
-						that.view.setAreaValue("inputText", sInput);
-						that.view.setAreaValue("resultText", "");
-						iStartLine = oInFile.iLine || 0;
-						that.fnParseRun2();
-						break;
-					case "load":
-						that.view.setAreaValue("inputText", sInput);
-						that.view.setAreaValue("resultText", "");
-						that.fnInvalidateScript();
-						break;
-					case "merge":
-						sInput = that.fnMergeScripts(that.view.getAreaValue("inputText"), sInput);
-						that.view.setAreaValue("inputText", sInput);
-						that.view.setAreaValue("resultText", "");
-						that.fnInvalidateScript();
-						break;
-					case "chain": // run through...
-					case "run":
-						that.view.setAreaValue("inputText", sInput);
-						that.view.setAreaValue("resultText", "");
-						iStartLine = oInFile.iLine || 0;
-						that.fnReset2();
-						that.fnParseRun2();
-						break;
-					default:
-						Utils.console.error("fnLoadFile: Unknown command:", sCommand);
-						break;
-					}
-					that.oVm.vmSetStartLine(iStartLine);
-				}
-				if (that.iTimeoutHandle === null) {
-					that.fnRunLoop();
-				}
-			},
-
-			fnExampleLoaded = function (sFullUrl, bSuppressLog) {
-				var sInput;
-
-				if (!bSuppressLog) {
-					Utils.console.log("Example " + sUrl + " loaded");
-				}
-
-				oExample = that.model.getExample(sExample);
-				sInput = oExample.script;
-				fnContinue(sInput);
-			},
-			fnExampleError = function () {
-				Utils.console.log("Example " + sUrl + " error");
-				fnContinue(null);
-			};
-
-		sName = oInFile.sName;
-		sKey = this.model.getProperty("example");
-		oInFile.sMemorizedExample = sKey;
-		iLastSlash = sKey.lastIndexOf("/");
-		if (iLastSlash >= 0) {
-			sPath = sKey.substr(0, iLastSlash); // take path from selected example
-			sName = sPath + "/" + sName;
-			sName = sName.replace(/\w+\/\.\.\//, ""); // simplify 2 dots (go back) in path: "dir/.."" => ""
-		}
-		sExample = sName;
-
-		if (Utils.debug > 0) {
-			Utils.console.debug("DEBUG: fnLoadFile: sName=" + sName + " (current=" + sKey + ")");
-		}
-
-		this.model.setProperty("example", sExample);
-		oExample = this.model.getExample(sExample); // already loaded
-		if (oExample && oExample.loaded) {
-			fnExampleLoaded("", true);
-		} else if (sExample && oExample) { // need to load
-			sDatabaseDir = this.model.getDatabase().src;
-			sUrl = sDatabaseDir + "/" + sExample + ".js";
-			Utils.loadScript(sUrl, fnExampleLoaded, fnExampleError);
-		} else {
-			Utils.console.warn("fnLoadFile: Unknown file:", sExample);
-			oVm.vmSetError(32); // TODO: set also derr=146 (xx not found)
-		}
 	},
 
 	fnWaitForFile: function () {

@@ -18,8 +18,6 @@ Model.prototype = {
 	init: function (config, initialConfig) {
 		this.config = config || {}; // store only a reference
 		this.initialConfig = initialConfig || {};
-		this.databases = {};
-		this.examples = {}; // loaded examples per database
 		// this.initVariables();
 	},
 	getProperty: function (sProperty) {
@@ -51,49 +49,5 @@ Model.prototype = {
 		this.variables = { };
 		return this;
 	},
-	*/
-
-	addDatabases: function (oDb) {
-		var sPar, oEntry;
-
-		for (sPar in oDb) {
-			if (oDb.hasOwnProperty(sPar)) {
-				oEntry = oDb[sPar];
-				this.databases[sPar] = oEntry;
-				this.examples[sPar] = {};
-			}
-		}
-		return this;
-	},
-	getAllDatabases: function () {
-		return this.databases;
-	},
-	getDatabase: function () {
-		var sDatabase = this.getProperty("database");
-
-		return this.databases[sDatabase];
-	},
-
-	getAllExamples: function () {
-		var selectedDatabase = this.getProperty("database");
-
-		return this.examples[selectedDatabase];
-	},
-	getExample: function (sKey) {
-		var selectedDatabase = this.getProperty("database");
-
-		return this.examples[selectedDatabase][sKey];
-	},
-	setExample: function (oExample) {
-		var selectedDatabase = this.getProperty("database"),
-			sKey = oExample.key;
-
-		if (!this.examples[selectedDatabase][sKey]) {
-			if (Utils.debug) {
-				Utils.console.debug("setExample: creating new example: " + sKey);
-			}
-		}
-		this.examples[selectedDatabase][sKey] = oExample;
-		return this;
-	}
+	*/	
 };

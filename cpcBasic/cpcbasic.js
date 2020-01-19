@@ -13,10 +13,6 @@ cpcBasic = {
 	config: {
 		bench: 0, // debug: number of parse bench loops
 		debug: 0,
-		databaseDirs: "examples", // example base directories (comma separated)
-		database: "examples", // examples, apps, saved
-		example: "cpcbasic",
-		exampleIndex: "0index.js", // example index for every exampleDir
 		showInput: true,
 		showInp2: false,
 		showCpc: true,
@@ -29,26 +25,6 @@ cpcBasic = {
 	model: null,
 	view: null,
 	controller: null,
-
-	fnHereDoc: function (fn) {
-		return String(fn).
-			replace(/^[^/]+\/\*\S*/, "").
-			replace(/\*\/[^/]+$/, "");
-	},
-
-	addIndex: function (sDir, input) {
-		if (typeof input !== "string") {
-			input = this.fnHereDoc(input);
-		}
-		return cpcBasic.controller.fnAddIndex(sDir, input);
-	},
-
-	addItem: function (sKey, input) {
-		if (typeof input !== "string") {
-			input = this.fnHereDoc(input);
-		}
-		return cpcBasic.controller.fnAddItem(sKey, input);
-	},
 
 	// https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 	fnParseUri: function (oConfig) {
@@ -97,7 +73,11 @@ cpcBasic = {
 		iDebug = Number(this.model.getProperty("debug"));
 		Utils.debug = iDebug;
 
-		that.controller = new Controller(this.model, this.view);
+        that.controller = new Controller(this.model, this.view);
+        
+        // Run immediatly
+        that.controller.fnReset();
+        that.controller.fnParseRun();
 	},
 
 	fnOnLoad: function () {
