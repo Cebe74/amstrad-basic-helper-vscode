@@ -5,12 +5,15 @@ LOCOMOTIVE SOFTWARE AMSTRAD CPC BASIC syntax highlighting for Visual Studio Code
 * Supports all reserved words from the AMSTRAD CPC Locomotive BASIC range,
 * Validates Amstrad Basic documents,
 * Renumbers the currently opened BASIC file with the RENUM command, available from the Command Palette (Ctrl+Shift+P or F1).
+* Can RUN simple programs that do not need to load/run/chain/merge other files. Type Ctrl+Shift+P or F1 and launch Amstrad Basic Run.
 
 ![Sample showing colorized code](images/basic.png)
 
-Best results when also using a [CPC font](https://fonts2u.com/download/amstrad-cpc464-regular.font) ;-)
+## Acknowledgments
 
-![Sample showing code with AMSTRAD CPC code](images/cpc-font.png)
+- This started as a fork of the excellent [AMSTRAD-Basic](https://github.com/dfreniche/amstradbasic-vscode) syntax highlighting extension from dfreniche.
+- Renum function rewritten for Amstrad Basic from the [COCOTools](https://marketplace.visualstudio.com/items?itemName=jasonpittman.cocotools) extension from jasonpittman.
+- Validation and CPC Emulation comes from the amazing [CPCBasic](https://github.com/benchmarko/CPCBasic) project from Marco Vieth.
 
 ## Basic
 
@@ -121,9 +124,3 @@ To change the colors to your liking, just edit `settings.json` global file and a
         ]
     }
 ```
-
-## Acknowledgments
-
-- This is a fork of the excellent [AMSTRAD-Basic](https://github.com/dfreniche/amstradbasic-vscode) extension from dfreniche. Credits go to him.
-- Renum function adapted for Amstrad Basic from the [COCOTools](https://marketplace.visualstudio.com/items?itemName=jasonpittman.cocotools) extension from jasonpittman.
-- Validation code comes from the [CPCBasic](https://github.com/benchmarko/CPCBasic) project from Marco Vieth.

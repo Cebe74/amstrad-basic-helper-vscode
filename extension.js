@@ -141,7 +141,7 @@ class RunPanel {
                 <legend>
                     <span id="inputLegend" class="legendButton" title="Show/Hide BASIC">CPC BASIC by Marco Vieth</span>
                 </legend>
-                <span id="warning">WARNING: The code is not updated when the main document changes. You need to RUN again. This will be improved in the next version.</span>
+                <span id="warning">WARNING: The code is not updated when the main document changes. Please press F1 and type RUN to update.</span>
                 <div id="inputArea" class="area  clearLeft">
                     <textarea id="inputText" rows="15" cols="80" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
                 </div>
@@ -216,7 +216,7 @@ class RunPanel {
                 cpcBasic.fnOnLoad();
                 cpcBasic.controller.fnReset();
                 cpcBasic.controller.fnParseRun();
-            })
+            });
             </script>
         </body>
         </html>`;
