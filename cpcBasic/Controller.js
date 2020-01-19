@@ -247,6 +247,13 @@ Controller.prototype = {
 		return aResult.join("\n");
 	},
 
+    fnLoadFile: function () {
+        var oInFile = this.oVm.vmGetFileObject();
+        var sCommand = oInFile.sCommand
+        Utils.console.warn("Cannot " +sCommand + " \"" + oInFile.sName + "\" as it would require local file access.");
+        this.oVm.vmSetError(32); // TODO: set also derr=146 (xx not found)
+    },
+
 	fnWaitForFile: function () {
 		var oInFile = this.oVm.vmGetFileObject(),
 			sName = oInFile.sName;

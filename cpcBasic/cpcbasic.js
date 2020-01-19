@@ -74,10 +74,6 @@ cpcBasic = {
 		Utils.debug = iDebug;
 
         that.controller = new Controller(this.model, this.view);
-        
-        // Run immediatly
-        that.controller.fnReset();
-        that.controller.fnParseRun();
 	},
 
 	fnOnLoad: function () {
@@ -155,5 +151,3 @@ if (!String.prototype.repeat) {
 		return sOut;
 	};
 }
-
-cpcBasic.fnOnLoad(); // if cpcbasic.js is the last script, we do not need to wait for window.onload

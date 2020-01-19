@@ -47,26 +47,14 @@ function updateDiagnostics(document, collection) {
 }
 
 class RunPanel {
-    constructor(panel, extensionPath, programName, program) {
+    constructor(panel, extensionPath) {
         this._disposables = [];
         this._panel = panel;
         this._extensionPath = extensionPath;
-        this._programName = programName;
-        this._program = program;
-
-        // Set the webview's initial html content
-        this._updateForProgram(this._programName, this._program);
 
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
-        // Update the content based on view changes
-        this._panel.onDidChangeViewState(e => {
-            if (this._panel.visible) {
-                this._update(this._programName, this._program);
-            }
-        }, null, this._disposables);
 
         // Handle messages from the webview
         this._panel.webview.onDidReceiveMessage(message => {
@@ -78,15 +66,15 @@ class RunPanel {
         }, null, this._disposables);
     }
 
-    static createOrShow(extensionPath, programName, program) {
+    static createOrShow(extensionPath) {
         const column = vscode.ViewColumn.Beside;
         // If we already have a panel, show it.
         if (RunPanel.currentPanel) {
-            RunPanel.currentPanel._panel.reveal(column);
+            RunPanel.currentPanel._panel.reveal(column, true);
             return;
         }
         // Otherwise, create a new panel.
-        const panel = vscode.window.createWebviewPanel(RunPanel.viewType, programName,
+        const panel = vscode.window.createWebviewPanel(RunPanel.viewType, "Amstrad Basic Run",
             {
                 preserveFocus: true,
                 viewColumn: column
@@ -95,12 +83,13 @@ class RunPanel {
                 enableScripts: true,
                 localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'cpcBasic'))]
             });
-        RunPanel.currentPanel = new RunPanel(panel, extensionPath, programName, program);
-    }    
+        RunPanel.currentPanel = new RunPanel(panel, extensionPath);
+    }
 
     run(programName, program) {
+        this._update();
         this._panel.title = programName;
-        this._panel.webview.postMessage({ name: programeName, sourceCode: program });
+        this._panel.webview.postMessage({ name: programName, sourceCode: program });
     }
 
     dispose() {
@@ -115,13 +104,12 @@ class RunPanel {
         }
     }
 
-    _updateForProgram(programName, program) {
+    _update() {
         const webview = this._panel.webview;
-        this._panel.title = `RUN"${programName}"`;
-        this._panel.webview.html = this._getHtmlForWebview(webview, program);
+        this._panel.webview.html = this._getHtmlForWebview(webview);
     }
 
-    _getHtmlForWebview(webview, program) {
+    _getHtmlForWebview(webview) {
         var scripts = ["BasicLexer.js", "BasicParser.js", "Canvas.js", "CodeGeneratorJs.js", "CommonEventHandler.js", "Controller.js", "CpcVm.js", "Keyboard.js", "Model.js", "Random.js", "Sound.js", "Utils.js",
             "View.js", "cpcCharset.js", "cpcconfig.js", "cpcbasic.js"];
 
@@ -155,7 +143,7 @@ class RunPanel {
                 </legend>
                 <span id="warning">WARNING: The code is not updated when the main document changes. You need to RUN again. This will be improved in the next version.</span>
                 <div id="inputArea" class="area  clearLeft">
-                    <textarea id="inputText" rows="15" cols="80" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">${program}</textarea>
+                    <textarea id="inputText" rows="15" cols="80" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
                 </div>
             </fieldset>
             <fieldset class="flexBox clearLeft" id="cpcAreaBox">
@@ -219,11 +207,15 @@ class RunPanel {
                 </div>
             </fieldset>
             ${scriptBlock}
-            <script>
+            <script nonce="${nonce}">
             // Handle the message inside the webview
             window.addEventListener('message', event => {
                 const program = event.data; // The JSON data our extension sent
-                document.getElementById("inputText").value = program.sourceCode;                
+                document.getElementById("inputText").value = program.sourceCode;
+                console.log("RUN\\"" + program.name + "\\"");
+                cpcBasic.fnOnLoad();
+                cpcBasic.controller.fnReset();
+                cpcBasic.controller.fnParseRun();
             })
             </script>
         </body>
@@ -301,10 +293,7 @@ function activate(context) {
 
             for (ls = 0; ls < linelist.length; ls++) {
                 let line = editor.document.lineAt(ls);
-                //if (line.text.trimRight().length > 0) {
-                //console.log("LINE: " + linelist[ls].newLineString);
                 edit.replace(editor.document.uri, line.range, linelist[ls].newLineString);
-                //}
             }
 
             vscode.workspace.applyEdit(edit);
@@ -327,8 +316,8 @@ function activate(context) {
 
             var programName = path.parse(editor.document.fileName).base;
             var program = editor.document.getText();
-            RunPanel.createOrShow(context.extensionPath, programName, program);
-            //RunPanel.run(programName, program);
+            RunPanel.createOrShow(context.extensionPath);
+            RunPanel.currentPanel.run(programName, program);
         }
     }));
 
