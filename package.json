@@ -1,61 +1,65 @@
 {
-	"name": "amstrad-basic-helper-vscode",
-	"displayName": "Amstrad Basic Helper",
-	"description": "Syntax Highlighter, Validator and Renumberer for Amstrad Basic programs",
-	"version": "1.0.4",
-	"publisher": "cebe74",
-	"engines": {
-		"vscode": "^1.41.0"
-	},
-	"icon": "images/ready.png",
-	"categories": [
-		"Programming Languages"
-	],
-	"repository": {
+    "name": "amstrad-basic-helper-vscode",
+    "displayName": "Amstrad Basic Helper",
+    "description": "Syntax Highlighter, Validator and Renumberer for Amstrad Basic programs",
+    "version": "1.0.5",
+    "publisher": "cebe74",
+    "engines": {
+        "vscode": "^1.41.0"
+    },
+    "icon": "images/ready.png",
+    "categories": [
+        "Programming Languages"
+    ],
+    "repository": {
         "type": "git",
         "url": "https://github.com/Cebe74/amstrad-basic-helper-vscode"
     },
-	"activationEvents": [		
-		"*"
-	],
-	"main": "./extension.js",
-	"contributes": {
-		"languages": [
-			{
-				"id": "amstradbasic",
-				"aliases": [
-					"Amstrad Basic",
-					"amstradbasic"
-				],
-				"extensions": [
-					".bas"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		],
-		"commands": [
-			{
-				"command": "amstrad-basic-helper.renum",
-				"title": "Amstrad Basic Renum"
-			}
-		],
-		"configuration": {
-			"type": "object",
-			"title": "Amstrad Basic Helper Commands",
-			"properties": {
-				"amstrad-basic-helper.renumIncrement": {
-					"type": "integer",
-					"default": 10,
-					"description": "Renum default line number increment"
-				}
-			}
-		},
-		"grammars": [
-			{
-				"language": "amstradbasic",
-				"scopeName": "source.amstradbasic",
-				"path": "./syntaxes/amstradbasic.tmLanguage.json"
-			}
-		]
-	}
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "amstradbasic",
+                "aliases": [
+                    "Amstrad Basic",
+                    "amstradbasic"
+                ],
+                "extensions": [
+                    ".bas"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "amstrad-basic-helper.renum",
+                "title": "Amstrad Basic Renum"
+            },
+            {
+                "command": "amstrad-basic-helper.run",
+                "title": "Amstrad Basic Run"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Amstrad Basic Helper Commands",
+            "properties": {
+                "amstrad-basic-helper.renumIncrement": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Renum default line number increment"
+                }
+            }
+        },
+        "grammars": [
+            {
+                "language": "amstradbasic",
+                "scopeName": "source.amstradbasic",
+                "path": "./syntaxes/amstradbasic.tmLanguage.json"
+            }
+        ]
+    }
 }
