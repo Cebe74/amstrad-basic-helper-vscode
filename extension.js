@@ -52,6 +52,8 @@ class RunPanel {
         this._panel = panel;
         this._extensionPath = extensionPath;
 
+        this._update();
+
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
@@ -81,15 +83,21 @@ class RunPanel {
             },
             {
                 enableScripts: true,
+                retainContextWhenHidden: true,
                 localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'cpcBasic'))]
             });
         RunPanel.currentPanel = new RunPanel(panel, extensionPath);
     }
 
-    run(programName, program) {
-        this._update();
-        this._panel.title = programName;
-        this._panel.webview.postMessage({ name: programName, sourceCode: program });
+    run(programName, program, reset) {
+        reset = (reset === true)?true:false;
+        if (reset) {
+            this._panel.title = programName;
+        }
+        // This is a bit crappy, but this way we check if the running program is the one being updated
+        if (this._panel.title === programName) {
+            this._panel.webview.postMessage({ name: programName, sourceCode: program, reset: reset });
+        }
     }
 
     dispose() {
@@ -137,35 +145,18 @@ class RunPanel {
         </head>
         
         <body>
-            <fieldset class="flexBox">
-                <legend>
-                    <span id="inputLegend" class="legendButton" title="Show/Hide BASIC">CPC BASIC by Marco Vieth</span>
-                </legend>
-                <span id="warning">WARNING: The code is not updated when the main document changes. Please press F1 and type RUN to update.</span>
-                <div id="inputArea" class="area  clearLeft">
-                    <textarea id="inputText" rows="15" cols="80" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
-                </div>
-            </fieldset>
             <fieldset class="flexBox clearLeft" id="cpcAreaBox">
                 <legend>
-                    <span id="cpcLegend" class="legendButton" title="Show/Hide CPC">CPC</span>
+                    <span id="cpcLegend" class="legendButton" title="Show/Hide CPC">CPC BASIC By Marco Vieth</span>
                     <button id="parseRunButton" title="Compile and run script">Run</button>
                     <button id="stopButton" title="Stop/escape/break running script" disabled>Break</button>
                     <button id="continueButton" title="Continue script" disabled>Continue</button>
                     <button id="resetButton" title="Reset CPC">Reset</button>
-                    <button id="soundButton" title="Sound on/off">Sound</button>
+                    <button id="soundButton" title="Sound on/off">Sound is off</button>
+                    <input  id="syncButton" type="checkbox" title="When set, program is reset and run at each keystroke">Auto-sync</input>
                 </legend>
                 <div id="cpcArea" class="area">
                     <canvas id="cpcCanvas" width="640" height="400"></canvas>
-                </div>
-            </fieldset>
-            <fieldset class="flexBox clearLeft">
-                <legend>
-                    <span id="inp2Legend" class="legendButton" title="Alternative way of input">Input</span>
-                </legend>
-                <div id="inp2Area" class="area">
-                    <textarea id="inp2Text" placeholder="experimental" rows="1" cols="40" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
-                    <button id="enterButton" title="Enter">Enter</button>
                 </div>
             </fieldset>
             <fieldset class="flexBox">
@@ -190,32 +181,29 @@ class RunPanel {
                     </div>
                 </div>
             </fieldset>
-            <fieldset class="flexBox">
-                <legend>
-                    <span id="outputLegend" class="legendButton" title="Show/Hide JavaScript">JavaScript</span>
-                </legend>
-                <div id="outputArea" class="area" hidden>
-                    <button id="runButton" title="Run JavaScript">Run</button>
-                    <br>
-                    <textarea id="outputText" placeholder="Use input field, press 'Run'" rows="15" cols="80" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
-                </div>
-            </fieldset>
             <fieldset class="flexBox clearLeft" id="consoleBox" hidden>
                 <legend id="consoleLegend" class="legendButton" title="Show/Hide Console log">Console log</legend>
                 <div id="consoleArea" class="area">
                     <textarea id="consoleText" rows="12" cols="40"></textarea>
                 </div>
             </fieldset>
+            <input type="hidden" id="inputText"></input>
+            <input type="hidden" id="outputText"></input>
             ${scriptBlock}
             <script nonce="${nonce}">
             // Handle the message inside the webview
             window.addEventListener('message', event => {
-                const program = event.data; // The JSON data our extension sent
+                const program = event.data;
                 document.getElementById("inputText").value = program.sourceCode;
-                console.log("RUN\\"" + program.name + "\\"");
-                cpcBasic.fnOnLoad();
-                cpcBasic.controller.fnReset();
-                cpcBasic.controller.fnParseRun();
+                document.getElementById("outputText").value = "";
+                if (program.reset || document.getElementById('syncButton').checked) {                                        
+                    console.log('RUN"' + program.name + '"');
+                    if (program.reset) cpcBasic.fnOnLoad();
+                    cpcBasic.controller.fnReset();
+                    cpcBasic.controller.fnParseRun();
+                } else {
+                    console.log('RUN"' + program.name + '"');
+                }
             });
             </script>
         </body>
@@ -246,6 +234,12 @@ function activate(context) {
     context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(editor => {
         if (editor) {
             updateDiagnostics(editor.document, collection);
+
+            if (RunPanel.currentPanel) {
+                var programName = path.parse(editor.document.fileName).base;
+                var program = editor.document.getText();
+                RunPanel.currentPanel.run(programName, program, false);
+            }
         }
     }));
 
@@ -317,7 +311,7 @@ function activate(context) {
             var programName = path.parse(editor.document.fileName).base;
             var program = editor.document.getText();
             RunPanel.createOrShow(context.extensionPath);
-            RunPanel.currentPanel.run(programName, program);
+            RunPanel.currentPanel.run(programName, program, true);
         }
     }));
 

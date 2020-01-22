@@ -114,12 +114,6 @@ CommonEventHandler.prototype = {
 		this.controller.fnParse();
 	},
 
-	onRunButtonClick: function () {
-		var sInput = this.view.getAreaValue("outputText");
-
-		this.controller.fnRun(sInput);
-	},
-
 	onStopButtonClick: function () {
 		this.controller.fnStop();
 	},

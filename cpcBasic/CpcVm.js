@@ -842,7 +842,7 @@ CpcVm.prototype = {
 		oInFile.sCommand = "chain";
 		oInFile.sName = sName;
 		oInFile.iLine = iLine;
-		this.vmStop("loadFile", 90);
+		//this.vmStop("loadFile", 90);
 	},
 
 	chainMerge: function (sName, iLine) { // optional iLine; TODO more parameters: delete number range
@@ -854,7 +854,7 @@ CpcVm.prototype = {
 		oInFile.sCommand = "chainMerge";
 		oInFile.sName = sName;
 		oInFile.iLine = iLine;
-		this.vmStop("loadFile", 90);
+		//this.vmStop("loadFile", 90);
 	},
 
 	chr$: function (n) {
@@ -1452,7 +1452,7 @@ CpcVm.prototype = {
 		oInFile.sCommand = "load";
 		oInFile.sName = sName;
 		oInFile.iAddress = iAddress;
-		this.vmStop("loadFile", 90);
+		//this.vmStop("loadFile", 90);
 	},
 
 	locate: function (iStream, iPos, iVpos) {
@@ -1503,7 +1503,7 @@ CpcVm.prototype = {
 		oInFile.bOpen = true;
 		oInFile.sCommand = "merge";
 		oInFile.sName = sName;
-		this.vmStop("loadFile", 90);
+		//this.vmStop("loadFile", 90);
 	},
 
 	mid$: function (s, iStart, iLen) { // as function; iLen is optional
@@ -1648,7 +1648,7 @@ CpcVm.prototype = {
 				oInFile.sCommand = "openin";
 				oInFile.sName = sName;
 				oInFile.fnFileCallback = this.vmOpeninCallback.bind(this);
-				this.vmStop("loadFile", 90);
+				//this.vmStop("loadFile", 90);
 			}
 		} else {
 			this.error(27, "openin"); // file already open
@@ -2291,7 +2291,7 @@ CpcVm.prototype = {
 			oInFile.sCommand = "run";
 			oInFile.sName = sName;
 			oInFile.fnFileCallback = this.vmRunCallback.bind(this);
-			this.vmStop("loadFile", 90);
+			//this.vmStop("loadFile", 90);
 		} else { // line number
 			this.oInput.aInputValues = [numOrString]; // we misuse aInputValues
 			this.vmStop("run", 90); // number or undefined

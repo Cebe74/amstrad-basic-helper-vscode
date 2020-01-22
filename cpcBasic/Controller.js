@@ -45,12 +45,6 @@ Controller.prototype = {
 		this.view = oView;
 		this.commonEventHandler = new CommonEventHandler(oModel, oView, this);
 
-		oView.setHidden("inputArea", !oModel.getProperty("showInput"));
-		oView.setHidden("inp2Area", !oModel.getProperty("showInp2"));
-		oView.setHidden("outputArea", !oModel.getProperty("showOutput"));
-		oView.setHidden("resultArea", !oModel.getProperty("showResult"));
-		oView.setHidden("variableArea", !oModel.getProperty("showVariable"));
-
 		oView.setHidden("cpcArea", false); // make sure canvas is not hidden (allows to get width, height)
 		this.oCanvas = new Canvas({
 			aCharset: cpcBasicCharset,
@@ -357,7 +351,6 @@ Controller.prototype = {
 			oVm.vmStop("", 0, true);
 			oVm.iLine = iLine;
 
-			this.view.setDisabled("runButton", true);
 			this.view.setDisabled("stopButton", false);
 			this.view.setDisabled("continueButton", true);
 		}
@@ -397,7 +390,6 @@ Controller.prototype = {
 		this.view.setAreaValue("resultText", oVm.sOut);
 		this.view.setAreaScrollTop("resultText"); // scroll to bottom
 
-		this.view.setDisabled("runButton", sReason === "reset");
 		this.view.setDisabled("stopButton", sReason !== "input" && sReason !== "key" && sReason !== "loadFile");
 		this.view.setDisabled("continueButton", sReason === "end" || sReason === "reset" || sReason === "input" || sReason === "key" || sReason === "loadFile" || sReason === "parse");
 		if (this.oVariables) {
@@ -545,7 +537,6 @@ Controller.prototype = {
 		var oVm = this.oVm,
 			oStop = oVm.vmGetStopObject();
 
-		this.view.setDisabled("runButton", true);
 		this.view.setDisabled("stopButton", false);
 		this.view.setDisabled("continueButton", true);
 		if (oStop.sReason === "break" || oStop.sReason === "escape" || oStop.sReason === "stop") {
