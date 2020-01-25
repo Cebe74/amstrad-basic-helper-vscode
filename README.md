@@ -1,4 +1,4 @@
-# AMSTRAD CPC - Basic README
+# AMSTRAD CPC Basic Helper
 
 LOCOMOTIVE SOFTWARE AMSTRAD CPC BASIC syntax highlighting for Visual Studio Code.
 
