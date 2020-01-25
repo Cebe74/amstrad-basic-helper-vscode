@@ -198,8 +198,8 @@ class RunPanel {
                 document.getElementById("outputText").value = "";
                 if (program.reset || document.getElementById('syncButton').checked) {                                        
                     console.log('RUN"' + program.name + '"');
-                    cpcBasic.controller.fnReset2();
-                    cpcBasic.controller.fnParseRun2();
+                    cpcBasic.controller.fnReset();
+                    cpcBasic.controller.fnParseRun();
                 } else {
                     console.log('LOAD"' + program.name + '"');
                 }
