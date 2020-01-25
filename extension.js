@@ -191,20 +191,23 @@ class RunPanel {
             <input type="hidden" id="outputText"></input>
             ${scriptBlock}
             <script nonce="${nonce}">
-            // Handle the message inside the webview
+            // Handle message inside the webview
             window.addEventListener('message', event => {
                 const program = event.data;
                 document.getElementById("inputText").value = program.sourceCode;
                 document.getElementById("outputText").value = "";
                 if (program.reset || document.getElementById('syncButton').checked) {                                        
                     console.log('RUN"' + program.name + '"');
-                    if (program.reset) cpcBasic.fnOnLoad();
-                    cpcBasic.controller.fnReset();
-                    cpcBasic.controller.fnParseRun();
+                    cpcBasic.controller.fnReset2();
+                    cpcBasic.controller.fnParseRun2();
                 } else {
-                    console.log('RUN"' + program.name + '"');
+                    console.log('LOAD"' + program.name + '"');
                 }
             });
+            // On load
+            cpcBasic.fnOnLoad();
+            cpcBasic.controller.fnReset();
+            cpcBasic.controller.fnRun();
             </script>
         </body>
         </html>`;
