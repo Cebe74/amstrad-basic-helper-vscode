@@ -90,7 +90,7 @@ class RunPanel {
     }
 
     run(programName, program, reset) {
-        reset = (reset === true)?true:false;
+        reset = (reset === true) ? true : false;
         if (reset) {
             this._panel.title = programName;
         }
@@ -198,8 +198,12 @@ class RunPanel {
                 document.getElementById("outputText").value = "";
                 if (program.reset || document.getElementById('syncButton').checked) {                                        
                     console.log('RUN"' + program.name + '"');
+                    cpcBasic.controller.fnReset();    
+
                     cpcBasic.controller.fnReset();
-                    cpcBasic.controller.fnParseRun();
+                    setTimeout(() => {
+                        cpcBasic.controller.fnParseRun();    
+                    }, cpcBasic.controller.oVm.vmGetTimeUntilFrame() + 100); // wait until next frame + 5 full frames (50 Hz => 20 ms)
                 } else {
                     console.log('LOAD"' + program.name + '"');
                 }

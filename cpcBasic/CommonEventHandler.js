@@ -44,7 +44,7 @@ CommonEventHandler.prototype = {
 				}
 				if (sHandler in this) {
 					this[sHandler](event);
-				} else if (!Utils.stringEndsWith(sHandler, "SelectClick") && !Utils.stringEndsWith(sHandler, "InputClick")) { // do not print all messages
+				} else if (!Utils.stringEndsWith(sHandler, "SelectClick") && !Utils.stringEndsWith(sHandler, "InputClick") && !Utils.stringEndsWith(sHandler, "KeyClick")) { // do not print all messages
 					Utils.console.log("Event handler not found: " + sHandler);
 				}
 			}

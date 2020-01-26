@@ -557,13 +557,7 @@ Controller.prototype = {
 		if (this.iTimeoutHandle === null) {
 			this.fnRunLoop();
 		}
-	},
-
-	fnScreenshot: function () {
-		var image = this.oCanvas.canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"); // here is the most important part because if you do not replace you will get a DOM 18 exception.
-
-		return image;
-	},
+	},	
 
 	fnEnter: function () {
 		var oVm = this.oVm,
