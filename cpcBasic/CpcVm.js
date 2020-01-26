@@ -2271,7 +2271,11 @@ CpcVm.prototype = {
 			Object.assign(oWin, oWinData);
 		}
 		this.oCanvas.changeMode(iMode); // or setMode?
-	},
+    },
+    
+    rsx: function() {
+        // Ignore unknown RSX
+    },
 
 	vmRunCallback: function (sInput) {
 		var oInFile = this.oInFile;

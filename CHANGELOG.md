@@ -1,5 +1,6 @@
 # Change Log
 
+- 1.0.9 Ignore unknown RSX
 - 1.0.8 Merged COPYCHR$ command, hopefully fixed weird sync issue on Reset/Run
 - 1.0.7 Trying to fix an issue with Reset/Run
 - 1.0.6 Better preview window with Autosync feature

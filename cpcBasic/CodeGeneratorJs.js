@@ -254,7 +254,14 @@ CodeGeneratorJs.prototype = {
 					var sRsxName = "rsx" + Utils.stringCapitalize(node.value.toLowerCase()),
 						aNodeArgs = fnParseArgs(node.args);
 
-					return "o." + sRsxName + "(" + aNodeArgs.join(", ") + ")";
+                    // hack to allow program to run with unknown RSX
+                    let knownRsx = [ "rsxCpm", "rsxBasic", "rsxMode" ];
+                    if (!knownRsx.includes(sRsxName)) {
+                        Utils.console.log("Ignoring RSX " + sRsxName);
+                        return "o.rsx()";
+                    }
+
+                    return "o." + sRsxName + "(" + aNodeArgs.join(", ") + ")";                    
 				},
 				number: function (node) {
 					return node.value;

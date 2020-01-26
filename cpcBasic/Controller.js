@@ -303,7 +303,7 @@ Controller.prototype = {
 		if (oOutput.error) {
 			oError = oOutput.error;
 			iEndPos = oError.pos + ((oError.value !== undefined) ? String(oError.value).length : 0);
-			this.view.setAreaSelection("inputText", oError.pos, iEndPos);
+			//this.view.setAreaSelection("inputText", oError.pos, iEndPos);
 			sOutput = oError.message + ": '" + oError.value + "' (pos " + oError.pos + "-" + iEndPos + ")";
 			this.oVm.print(0, sOutput + "\r\n"); // Error
 		} else {

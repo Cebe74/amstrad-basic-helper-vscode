@@ -2,7 +2,7 @@
     "name": "amstrad-basic-helper-vscode",
     "displayName": "Amstrad Basic Helper",
     "description": "Emulator, Syntax Highlighter and Renumberer for Amstrad Basic programs",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "publisher": "cebe74",
     "engines": {
         "vscode": "^1.41.0"
